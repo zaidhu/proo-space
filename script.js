@@ -2,100 +2,115 @@ const button = document.getElementById('mysteryButton');
 const messageBox = document.getElementById('messageBox');
 const body = document.body;
 
-const weirdMessages = [
-    "YOUR COMPUTER IS NOW A POTATO 🥔",
-    "THE BUTTON IS JUDGING YOUR FASHION SENSE 👗",
-    "OOPS! I ACCIDENTALLY DELETED THE INTERNET 🌐",
-    "PLEASE WAIT WHILE WE DOWNLOAD MORE RAM... 💾",
-    "YOU HAVE BEEN SELECTED FOR THE MARS MISSION. NO RETURNS. 🚀",
-    "YOUR MOUSE IS TIRED. GIVE IT A BREAK. 🖱️",
-    "I CAN SEE YOU. NICE SHIRT. 👀",
-    "THE CAKE IS A LIE. 🍰",
-    "ERROR 404: SENSE OF HUMOR NOT FOUND 🤡",
-    "STOP TOUCHING ME! IT TICKLES! 😂",
-    "GRAVITY IS OPTIONAL TODAY 🌌",
-    "YOU JUST WON 1,000,000 INVISIBLE DOLLARS 💰",
-    "THE BUTTON WILL SELF-DESTRUCT IN 5... 4... 3... 💥",
-    "HAVE YOU TRIED TURNING YOURSELF OFF AND ON AGAIN? 🔌",
-    "A WILD GLITCH APPEARED! 👾",
-    "WHY ARE WE STILL HERE? JUST TO SUFFER? 🎭",
-    "YOU'RE CLICKING TOO LOUDLY. SHHH! 🤫",
-    "THE BUTTON IS NOW IN CHARGE. OBEY. 👑",
-    "SPOILER ALERT: THE BUTTON WINS. 🎬",
-    "IS THIS REAL LIFE? OR IS THIS JUST FANTASY? 🎤"
-];
+// --- Matrix Rain Effect ---
+const canvas = document.createElement('canvas');
+canvas.id = 'matrix';
+document.body.appendChild(canvas);
+const ctx = canvas.getContext('2d');
 
-const emojis = ['🤡', '👽', '🌮', '💩', '💀', '🍆', '🌈', '🧨', '🧿', '🧬', '🧸', '🦠', '🍄'];
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+let columns = Math.floor(width / 20);
+let drops = Array(columns).fill(1);
 
-let isRunaway = false;
-
-// Runaway Button Logic
-button.addEventListener('mouseover', () => {
-    if (isRunaway) {
-        const x = Math.random() * (window.innerWidth - 200);
-        const y = Math.random() * (window.innerHeight - 200);
-        button.style.left = `${x}px`;
-        button.style.top = `${y}px`;
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#0f0';
+    ctx.font = '20px monospace';
+    for (let i = 0; i < drops.length; i++) {
+        const text = String.fromCharCode(Math.random() * 128);
+        ctx.fillText(text, i * 20, drops[i] * 20);
+        if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
     }
+}
+let matrixInterval = setInterval(drawMatrix, 50);
+
+// --- Cursor Follower ---
+const follower = document.createElement('div');
+follower.className = 'cursor-follower';
+document.body.appendChild(follower);
+document.addEventListener('mousemove', (e) => {
+    follower.style.left = e.clientX + 15 + 'px';
+    follower.style.top = e.clientY + 15 + 'px';
+    const comments = ["Stop moving", "I see you", "Nice click", "Why?", "Click it!", "Don't do it"];
+    if (Math.random() > 0.95) follower.textContent = comments[Math.floor(Math.random() * comments.length)];
 });
+
+// --- Chaos Functions ---
+function triggerBSOD() {
+    body.innerHTML = `
+        <h1>:(</h1>
+        <p>Your PC ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.</p>
+        <p>0% complete</p>
+        <br><br>
+        <p>For more information about this issue and possible fixes, visit https://proo.space/stopcode</p>
+        <p>If you call a support person, give them this info:<br>Stop code: BUTTON_CLICKED_TOO_HARD</p>
+    `;
+    body.className = 'bsod';
+    let percent = 0;
+    const interval = setInterval(() => {
+        percent += Math.floor(Math.random() * 10);
+        if (percent >= 100) {
+            percent = 100;
+            clearInterval(interval);
+            setTimeout(() => location.reload(), 2000);
+        }
+        body.querySelector('p:nth-child(3)').textContent = `${percent}% complete`;
+    }, 500);
+}
+
+function cloneButtons() {
+    for (let i = 0; i < 15; i++) {
+        const b = document.createElement('button');
+        b.className = 'mystery-button clone-button';
+        b.style.left = Math.random() * 90 + 'vw';
+        b.style.top = Math.random() * 90 + 'vh';
+        b.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        b.onclick = () => b.classList.add('fall');
+        document.body.appendChild(b);
+    }
+}
+
+function gravityCollapse() {
+    document.querySelectorAll('h1, p, button, div').forEach(el => {
+        el.classList.add('fall');
+    });
+    setTimeout(() => location.reload(), 3000);
+}
 
 function showMessage(msg) {
     messageBox.textContent = msg;
-    messageBox.classList.add('show');
-    setTimeout(() => messageBox.classList.remove('show'), 3000);
+    messageBox.style.display = 'block';
+    setTimeout(() => messageBox.style.display = 'none', 3000);
 }
 
-function rainEmojis() {
-    for (let i = 0; i < 50; i++) {
-        const emoji = document.createElement('div');
-        emoji.className = 'emoji-rain';
-        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-        emoji.style.left = Math.random() * 100 + 'vw';
-        emoji.style.animationDuration = (Math.random() * 2 + 1) + 's';
-        document.body.appendChild(emoji);
-        setTimeout(() => emoji.remove(), 3000);
-    }
-}
-
-function triggerChaos() {
+// --- Main Event ---
+button.addEventListener('click', () => {
     const r = Math.random();
-    
-    // Reset classes
     body.className = '';
-    button.classList.remove('flying');
-    isRunaway = false;
-
-    if (r < 0.2) {
-        body.classList.add('glitch-mode');
-        showMessage("SYSTEM OVERLOAD! ⚠️");
-    } else if (r < 0.4) {
-        body.classList.add('rotate-mode');
-        showMessage("DO A BARREL ROLL! 🌀");
+    
+    if (r < 0.15) {
+        triggerBSOD();
+    } else if (r < 0.3) {
+        cloneButtons();
+        showMessage("BUTTON MITOSIS ACTIVATED!");
+    } else if (r < 0.45) {
+        gravityCollapse();
+        showMessage("GRAVITY.EXE HAS STOPPED WORKING");
     } else if (r < 0.6) {
-        isRunaway = true;
-        button.style.position = 'fixed';
-        showMessage("CATCH ME IF YOU CAN! 🏃‍♂️");
-    } else if (r < 0.8) {
-        rainEmojis();
-        showMessage("IT'S RAINING WEIRDNESS! ⛈️");
+        body.classList.add('shake');
+        showMessage("EARTHQUAKE!!!");
+        setTimeout(() => body.classList.remove('shake'), 2000);
     } else {
-        body.classList.add('invert-mode');
-        showMessage("WELCOME TO THE UPSIDE DOWN 🙃");
+        showMessage("SYSTEM MALFUNCTION... GOOD LUCK.");
+        body.style.filter = `hue-rotate(${Math.random() * 360}deg) invert(${Math.random()})`;
     }
-
-    // Always show a random message
-    if (Math.random() > 0.5) {
-        setTimeout(() => showMessage(weirdMessages[Math.floor(Math.random() * weirdMessages.length)]), 1000);
-    }
-}
-
-button.addEventListener('click', (e) => {
-    e.stopPropagation();
-    triggerChaos();
 });
 
-// Randomly change button text
+// Randomly change Matrix color
 setInterval(() => {
-    const texts = ["DON'T CLICK", "DO IT", "CLICK FOR PIZZA", "I'M BORED", "EXIT GAME", "FREE ROBUX"];
-    button.querySelector('.button-text').textContent = texts[Math.floor(Math.random() * texts.length)];
-}, 2000);
+    const colors = ['#0f0', '#f00', '#00f', '#ff0', '#f0f', '#0ff'];
+    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+}, 5000);
